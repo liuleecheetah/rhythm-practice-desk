@@ -3,7 +3,7 @@
   "name": "節奏練習台",
   "version": "0.0.1",
   "minAppVersion": "1.5.0",
-  "description": "打擊基本功練習、練習記錄與教材卡。（目前是階段 0：手機可行性測試版）",
+  "description": "打擊基本功練習、練習記錄與教材卡。目前是階段 0 手機可行性測試版。",
   "author": "liuleecheetah",
   "isDesktopOnly": false
 }

@@ -1,9 +1,11 @@
 name: Release
 
-# 推送版本標籤（例如 0.0.1）時自動測試、打包，並建立 GitHub Release 供 BRAT 安裝
+# main 上 manifest.json 的版本號改變時，自動測試、打包，並建立該版本的 GitHub Release 供 BRAT 安裝
 on:
   push:
-    tags: ["*"]
+    branches: [main]
+    paths: [manifest.json]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -19,11 +21,10 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
-      - name: 確認標籤與 manifest 版本一致
-        run: |
-          v=$(node -p "require('./manifest.json').version")
-          [ "$v" = "${GITHUB_REF_NAME}" ] || { echo "manifest 版本 $v 與標籤 ${GITHUB_REF_NAME} 不一致"; exit 1; }
-      - name: 建立 Release
+      - name: 建立 Release（該版本已存在就略過）
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" main.js manifest.json styles.css --title "$GITHUB_REF_NAME" --notes "見 README。"
+        run: |
+          v=$(node -p "require('./manifest.json').version")
+          if gh release view "$v" >/dev/null 2>&1; then echo "Release $v 已存在，略過"; exit 0; fi
+          gh release create "$v" main.js manifest.json styles.css --target "$GITHUB_SHA" --title "$v" --notes "見 README。"
