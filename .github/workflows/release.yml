@@ -1,0 +1,29 @@
+name: Release
+
+# 推送版本標籤（例如 0.0.1）時自動測試、打包，並建立 GitHub Release 供 BRAT 安裝
+on:
+  push:
+    tags: ["*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: 確認標籤與 manifest 版本一致
+        run: |
+          v=$(node -p "require('./manifest.json').version")
+          [ "$v" = "${GITHUB_REF_NAME}" ] || { echo "manifest 版本 $v 與標籤 ${GITHUB_REF_NAME} 不一致"; exit 1; }
+      - name: 建立 Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" main.js manifest.json styles.css --title "$GITHUB_REF_NAME" --notes "見 README。"
