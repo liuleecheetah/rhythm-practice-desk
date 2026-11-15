@@ -1,0 +1,8 @@
+{
+  "name": "@rpd/rhythm",
+  "version": "0.0.1",
+  "private": true,
+  "description": "節奏練習：節拍器引擎、練習腳本、課程資料。不依賴 Obsidian。",
+  "main": "src/index.ts",
+  "types": "src/index.ts"
+}

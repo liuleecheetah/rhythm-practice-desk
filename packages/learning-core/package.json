@@ -1,0 +1,9 @@
+{
+  "name": "@rpd/learning-core",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Obsidian 學習模組：練習記錄讀寫、進度推導、教材卡。打包進使用它的外掛。",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "peerDependencies": { "obsidian": "*" }
+}

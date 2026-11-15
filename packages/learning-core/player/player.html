@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>節奏練習台播放器</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  #player { width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+<!--
+  節奏練習台（Obsidian 外掛）用的 YouTube 播放中繼頁。
+  只使用 YouTube 官方 IFrame Player API；不下載、不擷取影片或音訊；不遮蓋播放器控制項。
+  外掛以 postMessage 傳指令：{ target: "rpd-player", cmd, ... }
+  本頁回報：{ source: "rpd-player", type: "ready" | "error" | "status" | "log", ... }
+-->
+<div id="player"></div>
+<script>
+  (function () {
+    var params = new URLSearchParams(location.search);
+    var videoId = params.get("v") || "";
+    var player = null;
+    var loop = null; // { start, end }
+    var loopCount = 0;
+
+    function send(msg) {
+      msg.source = "rpd-player";
+      try { parent.postMessage(msg, "*"); } catch (e) {}
+    }
+
+    window.addEventListener("message", function (ev) {
+      var d = ev.data;
+      if (!d || typeof d !== "object" || d.target !== "rpd-player" || !player) return;
+      switch (d.cmd) {
+        case "load": loop = null; loopCount = 0; player.loadVideoById(String(d.videoId), Number(d.start) || 0); break;
+        case "play": player.playVideo(); break;
+        case "pause": player.pauseVideo(); break;
+        case "seek": player.seekTo(Number(d.time) || 0, true); break;
+        case "rate": player.setPlaybackRate(Number(d.rate) || 1); break;
+        case "loop":
+          loop = { start: Number(d.start) || 0, end: Number(d.end) || 0 };
+          loopCount = 0;
+          player.seekTo(loop.start, true);
+          player.playVideo();
+          break;
+        case "clearLoop": loop = null; break;
+      }
+    });
+
+    window.onYouTubeIframeAPIReady = function () {
+      player = new YT.Player("player", {
+        width: "100%",
+        height: "100%",
+        videoId: videoId,
+        host: "https://www.youtube-nocookie.com",
+        playerVars: { playsinline: 1, rel: 0, origin: location.origin },
+        events: {
+          onReady: function () { send({ type: "ready" }); },
+          onError: function (e) { send({ type: "error", code: e.data }); }
+        }
+      });
+      setInterval(function () {
+        if (!player || !player.getCurrentTime) return;
+        var t = player.getCurrentTime();
+        if (loop && loop.end > loop.start && t >= loop.end) {
+          player.seekTo(loop.start, true);
+          loopCount += 1;
+          t = loop.start;
+        }
+        send({
+          type: "status",
+          currentTime: t,
+          playerState: player.getPlayerState ? player.getPlayerState() : -1,
+          playbackRate: player.getPlaybackRate ? player.getPlaybackRate() : 1,
+          loopCount: loopCount
+        });
+      }, 200);
+    };
+
+    var s = document.createElement("script");
+    s.src = "https://www.youtube.com/iframe_api";
+    s.onerror = function () { send({ type: "log", text: "無法載入 YouTube IFrame API" }); };
+    document.head.appendChild(s);
+  })();
+</script>
+</body>
+</html>
