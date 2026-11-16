@@ -1,6 +1,6 @@
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
 import { computeProgress, dayKey, summarizeWeek, addDays, sortRecords, type Progress, type StoreSnapshot, type LearningRecord } from "@rpd/learning-core";
-import { EXERCISES, STAGES, WEEKLY_GOALS, exerciseById, type Place } from "@rpd/rhythm";
+import { EXERCISES, GROUPS, STAGES, WEEKLY_GOALS, exerciseById, type Place } from "@rpd/rhythm";
 import type RhythmPracticeDesk from "../main";
 import { CURRICULUM } from "../curriculum";
 import { suggestNext } from "../suggest";
@@ -71,6 +71,14 @@ export class TodayView extends ItemView {
     opt.createDiv({ cls: "rpd-label", text: "橋下" });
     opt.createDiv({ text: stage.bridge });
 
+    // 全部練習：不限這一期，任何代號都能開啟
+    const all = root.createEl("details", { cls: "rpd-section rpd-all" });
+    all.createEl("summary", { text: `全部練習（${EXERCISES.length} 個）` });
+    for (const g of GROUPS) {
+      all.createDiv({ cls: "rpd-label", text: g.name });
+      for (const e of EXERCISES.filter((x) => x.group === g.id)) this.exerciseRow(all, e.id, p, defaultPlace(e.id));
+    }
+
     // 最近 7 天
     const since = addDays(new Date(new Date().setHours(0, 0, 0, 0)), -6);
     const recent = sortRecords(snap.records.filter((r) => r.date >= since)).reverse();
@@ -116,7 +124,7 @@ export class TodayView extends ItemView {
     if (extra) sub.push(extra);
     if (last) sub.push(`上次 ${fmtDate(last.date)} ${last.raw.bpm ? `${last.raw.bpm} BPM ` : ""}${last.passed ? "達到" : "沒達到"}`);
     const s = suggestNext(ex, ip.records, ip.cells);
-    if (s.note) sub.push(s.note);
+    if (s.note && ip.records.length) sub.push(s.note); // 沒有記錄時不重複顯示「課程的預設速度」
     if (ip.otherRecords.length) sub.push(`鼓上 ${ip.otherRecords.length} 則`);
     if (sub.length) row.createDiv({ cls: "rpd-desc", text: sub.join("｜") });
     if (hasScript(id)) row.createDiv({ cls: "rpd-desc rpd-accent-text", text: "點這裡開始練習（有節拍器腳本）" });

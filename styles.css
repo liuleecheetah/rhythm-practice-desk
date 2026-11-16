@@ -66,3 +66,5 @@
 .rpd-accent-text { color: var(--text-accent); }
 .rpd-secondary { margin-top: 8px; }
 .rpd-bottom .rpd-choice { margin: 0; }
+
+.rpd-all summary { cursor: pointer; font-weight: var(--font-semibold); min-height: 44px; display: flex; align-items: center; }
