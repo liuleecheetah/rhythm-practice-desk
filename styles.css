@@ -1,5 +1,5 @@
 /* 只用 Obsidian 的 CSS 變數，深淺色主題都適用 */
-.rpd-root { padding-bottom: 24px; }
+.rpd-root { padding-bottom: calc(24px + var(--rpd-bottom-offset, 0px)); }
 .rpd-root button, .rpd-modal button { min-height: 44px; min-width: 44px; }
 .rpd-desc { color: var(--text-muted); font-size: var(--font-ui-small); }
 .rpd-label { font-weight: var(--font-semibold); margin: 12px 0 4px; }
@@ -25,7 +25,7 @@
 
 .rpd-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 6px 0; }
 .rpd-wide { width: 100%; min-height: 52px !important; font-size: 1.05em; }
-.rpd-bottom { position: sticky; bottom: 0; background: var(--background-primary); padding: 8px 0; }
+.rpd-bottom { position: sticky; bottom: var(--rpd-bottom-offset, 0px); background: var(--background-primary); padding: 8px 0; z-index: 2; }
 
 /* ---------- 階段 2：節拍器與練習執行器 ---------- */
 /* 金＝時間參照（節拍器），皮＝手（沿用節奏練習台.html 的材質命名） */
@@ -68,3 +68,6 @@
 .rpd-bottom .rpd-choice { margin: 0; }
 
 .rpd-all summary { cursor: pointer; font-weight: var(--font-semibold); min-height: 44px; display: flex; align-items: center; }
+
+.rpd-topbar { display: flex; margin: 4px 0 8px; }
+.rpd-back { min-height: 44px; padding: 0 14px; }

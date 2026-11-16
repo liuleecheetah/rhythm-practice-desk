@@ -8,6 +8,7 @@ import { renderCells } from "./cells";
 import { NewRecordModal } from "./newRecord";
 import { hasScript } from "./runner";
 import { METRONOME_VIEW } from "./metronomeView";
+import { trackBottomOffset } from "./layout";
 
 export const TODAY_VIEW = "rpd-today";
 
@@ -22,13 +23,17 @@ export class TodayView extends ItemView {
   getDisplayText(): string { return "節奏練習台"; }
   getIcon(): string { return "drum"; }
 
+  private untrack: (() => void) | null = null;
+
   async onOpen(): Promise<void> {
+    this.untrack = trackBottomOffset(this.contentEl);
     this.off = this.plugin.store.onChange((s) => this.render(s));
     this.render(this.plugin.store.snapshot);
   }
 
   async onClose(): Promise<void> {
     this.off?.();
+    this.untrack?.();
   }
 
   private render(snap: StoreSnapshot): void {

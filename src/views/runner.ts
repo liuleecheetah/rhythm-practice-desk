@@ -15,6 +15,7 @@ import { renderCells } from "./cells";
 import { Ring } from "./ring";
 import { Player } from "./player";
 import { bpmControl } from "./controls";
+import { backBar, trackBottomOffset } from "./layout";
 
 export const RUNNER_VIEW = "rpd-runner";
 
@@ -50,7 +51,7 @@ export class RunnerView extends ItemView {
   }
 
   getViewType(): string { return RUNNER_VIEW; }
-  getDisplayText(): string { return `練習 ${this.exId}`; }
+  getDisplayText(): string { return "練習"; }
   getIcon(): string { return "drum"; }
 
   getState(): Record<string, unknown> {
@@ -65,13 +66,24 @@ export class RunnerView extends ItemView {
     this.render();
   }
 
+  private untrack: (() => void) | null = null;
+
   async onOpen(): Promise<void> {
+    this.untrack = trackBottomOffset(this.contentEl);
     this.resetForExercise();
     this.render();
   }
 
   async onClose(): Promise<void> {
     this.player?.stop();
+    this.untrack?.();
+  }
+
+  private goHome(): void {
+    this.player?.stop();
+    this.resetForExercise();
+    this.render();
+    void this.plugin.openToday();
   }
 
   private get ex(): Exercise {
@@ -104,6 +116,7 @@ export class RunnerView extends ItemView {
     const root = this.contentEl;
     root.empty();
     root.addClass("rpd-root");
+    backBar(root, () => this.goHome(), this.phase === "running" ? "停止並回今日頁" : "今日頁");
     if (this.phase === "intro") void this.renderIntro(root);
     else if (this.phase === "running") void this.renderRunning(root);
     else if (this.phase === "result") this.renderResult(root);

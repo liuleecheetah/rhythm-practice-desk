@@ -10,6 +10,7 @@ import type RhythmPracticeDesk from "../main";
 import { Ring } from "./ring";
 import { Player } from "./player";
 import { bpmControl, choice } from "./controls";
+import { backBar, trackBottomOffset } from "./layout";
 
 export const METRONOME_VIEW = "rpd-metronome";
 
@@ -29,12 +30,16 @@ export class MetronomeView extends ItemView {
   getDisplayText(): string { return "節拍器"; }
   getIcon(): string { return "timer"; }
 
+  private untrack: (() => void) | null = null;
+
   async onOpen(): Promise<void> {
+    this.untrack = trackBottomOffset(this.contentEl);
     this.render();
   }
 
   async onClose(): Promise<void> {
     this.player?.stop();
+    this.untrack?.();
   }
 
   private render(): void {
@@ -42,6 +47,7 @@ export class MetronomeView extends ItemView {
     const root = this.contentEl;
     root.empty();
     root.addClass("rpd-root");
+    backBar(root, () => { this.player?.stop(); void this.plugin.openToday(); });
     const c = this.cfg;
 
     const ring = new Ring(root);
