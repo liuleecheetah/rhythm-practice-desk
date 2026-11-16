@@ -1,6 +1,6 @@
 {
   "name": "rhythm-practice-desk",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "description": "節奏練習台：Obsidian 外掛（打擊基本功練習、練習記錄、教材卡）",
   "scripts": {

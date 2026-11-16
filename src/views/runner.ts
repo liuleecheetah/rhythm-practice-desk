@@ -144,6 +144,7 @@ export class RunnerView extends ItemView {
     this.renderSeq++;
     const root = this.contentEl;
     root.empty();
+    root.removeClass("is-running");
     root.addClass("rpd-root");
     backBar(root, () => this.goHome(), this.phase === "running" ? "停止並回今日頁" : "今日頁");
     if (this.phase === "intro") void this.renderIntro(root);
@@ -273,6 +274,7 @@ export class RunnerView extends ItemView {
     const ex = exerciseById(item.id)!;
     const script = scriptFor(item.id)!;
     const target = this.targetFor(item);
+    root.addClass("is-running");
     root.createEl("h2", { text: `${ex.id} ${ex.name}${this.pairMode ? `（${this.current + 1}/${this.items.length}）` : ""}` });
 
     let finished = false;
@@ -346,7 +348,7 @@ export class RunnerView extends ItemView {
     player.layout(cfg, hand(0));
     const elapsed = () => player.met?.elapsed() ?? 0;
 
-    await player.start(cfg, {
+    const started = player.start(cfg, {
       onBar: (bar) => {
         const up = script.barUpdate?.(bar, item.opts);
         if (up?.grouping7) player.met?.setGrouping7(up.grouping7);
@@ -384,6 +386,16 @@ export class RunnerView extends ItemView {
         } else timer.setText(fmt(elapsed()));
       },
     });
+    try {
+      await started;
+    } catch (e) {
+      new Notice((e as Error).message, 8000);
+      timer.setText("聲音沒有啟動");
+      this.stopAll();
+      finished = true;
+      const back = controls.createEl("button", { cls: "mod-cta rpd-wide", text: "回到說明，再試一次" });
+      back.onclick = () => { this.reset(); this.render(); };
+    }
   }
 
   // ---------- 3. 問結果 ----------

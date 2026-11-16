@@ -102,3 +102,10 @@
 .rpd-plan { color: var(--text-muted); font-size: var(--font-ui-small); margin: 2px 0 6px; }
 .rpd-links { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 8px 0; }
 .rpd-h { margin: 18px 0 4px; }
+
+/* 手機：底部按鈕不浮動（浮動會蓋住內容），放在內容最後；頁面底部留出導覽列的空間 */
+.is-mobile .rpd-bottom { position: static; padding-top: 12px; }
+.is-mobile .rpd-root { padding-bottom: calc(32px + var(--rpd-bottom-offset, 96px)); }
+/* 練習中：環縮小，讓環、提示、計時與「結束」在同一個畫面 */
+.rpd-root.is-running .rpd-ring { width: min(64vw, 38vh, 300px); }
+.rpd-root.is-running h2 { font-size: 1.15em; margin: 4px 0; }

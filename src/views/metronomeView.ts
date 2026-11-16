@@ -1,7 +1,7 @@
 // 獨立的節拍器（規格 6.1）：拍號、分組、細分、重音、靜音小節、預備拍。
 // 設定只存在這個畫面裡，不寫入任何檔案。
 
-import { ItemView, Setting, WorkspaceLeaf } from "obsidian";
+import { ItemView, Notice, Setting, WorkspaceLeaf } from "obsidian";
 import {
   DEFAULT_CLICK, GROUPING_7_IDS, METERS, SUBDIVISION_LABELS, effectiveSubdivision,
   type ClickConfig, type Grouping7, type MeterId, type Subdivision,
@@ -114,6 +114,9 @@ export class MetronomeView extends ItemView {
           ring.setLabel(e.countIn ? "預備" : e.muted ? "靜" : "", e.muted ? "rest" : "");
           if (!e.countIn) info.setText(`第 ${e.bar + 1} 小節${e.muted ? "（靜音）" : ""}`);
         },
+      }).catch((e: Error) => {
+        new Notice(e.message, 8000);
+        btn.setText("開始");
       });
     };
   }
