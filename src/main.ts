@@ -7,6 +7,9 @@ import { NewRecordModal } from "./views/newRecord";
 import { RunnerView, RUNNER_VIEW } from "./views/runner";
 import { MetronomeView, METRONOME_VIEW } from "./views/metronomeView";
 import { AudioHost } from "./audio";
+import { BadgesView, BADGES_VIEW } from "./views/badges";
+import { StatsView, STATS_VIEW } from "./views/stats";
+import type { RunnerState } from "./views/runner";
 
 export default class RhythmPracticeDesk extends Plugin {
   settings: RpdSettings = { ...DEFAULT_SETTINGS };
@@ -22,6 +25,8 @@ export default class RhythmPracticeDesk extends Plugin {
     this.registerView(TODAY_VIEW, (leaf) => new TodayView(leaf, this));
     this.registerView(RUNNER_VIEW, (leaf) => new RunnerView(leaf, this));
     this.registerView(METRONOME_VIEW, (leaf) => new MetronomeView(leaf, this));
+    this.registerView(BADGES_VIEW, (leaf) => new BadgesView(leaf, this));
+    this.registerView(STATS_VIEW, (leaf) => new StatsView(leaf, this));
     this.addRibbonIcon("drum", "節奏練習台：今日頁", () => void this.openToday());
     this.addCommand({ id: "open-today", name: "開啟今日頁", callback: () => void this.openToday() });
     this.addCommand({
@@ -30,6 +35,8 @@ export default class RhythmPracticeDesk extends Plugin {
       callback: () => new NewRecordModal(this.app, this.store, { place: "打擊墊", exercise: "", setting: "", bpm: null, durationMin: null }).open(),
     });
     this.addCommand({ id: "open-metronome", name: "開啟節拍器", callback: () => void this.openView(METRONOME_VIEW) });
+    this.addCommand({ id: "open-badges", name: "開啟徽章頁", callback: () => void this.openView(BADGES_VIEW) });
+    this.addCommand({ id: "open-stats", name: "開啟成效頁", callback: () => void this.openView(STATS_VIEW) });
     this.addSettingTab(new RpdSettingTab(this.app, this));
   }
 
@@ -46,8 +53,8 @@ export default class RhythmPracticeDesk extends Plugin {
     return f instanceof TFile ? this.app.vault.cachedRead(f) : null;
   }
 
-  async openRunner(exercise: string): Promise<void> {
-    await this.openView(RUNNER_VIEW, { exercise });
+  async openRunner(exercise: string, extra: Omit<RunnerState, "exercise"> = {}): Promise<void> {
+    await this.openView(RUNNER_VIEW, { exercise, ...extra });
   }
 
   logFolder(): string {
@@ -78,6 +85,7 @@ export default class RhythmPracticeDesk extends Plugin {
 
   async saveSettings(): Promise<void> {
     await this.saveData(this.settings);
+    // 重新掃描會通知所有畫面重畫（例如關閉「顯示等級與徽章」後）
     this.store?.scheduleScan(0);
   }
 }

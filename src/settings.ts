@@ -8,12 +8,15 @@ export interface RpdSettings {
   /** COURSE.md 的路徑；空白時用「筆記資料夾/COURSE.md」 */
   coursePath: string;
   volume: number;
+  /** 顯示等級、徽章與每週目標（COURSE.md：連續 4 週練習次數沒有增加就關閉） */
+  showGamification: boolean;
 }
 
 export const DEFAULT_SETTINGS: RpdSettings = {
   folder: "節奏練習台",
   coursePath: "",
   volume: 0.8,
+  showGamification: true,
 };
 
 export class RpdSettingTab extends PluginSettingTab {
@@ -39,6 +42,15 @@ export class RpdSettingTab extends PluginSettingTab {
       .addText((t) =>
         t.setPlaceholder(`${this.plugin.settings.folder}/COURSE.md`).setValue(this.plugin.settings.coursePath).onChange(async (v) => {
           this.plugin.settings.coursePath = v.trim();
+          await this.plugin.saveSettings();
+        }),
+      );
+    new Setting(containerEl)
+      .setName("顯示等級與徽章")
+      .setDesc("關閉後只保留過關標準、進度格與練習記錄（等級、徽章、每週目標都不顯示）。可以到「成效」頁看最近 8 週的練習次數再決定。")
+      .addToggle((t) =>
+        t.setValue(this.plugin.settings.showGamification).onChange(async (v) => {
+          this.plugin.settings.showGamification = v;
           await this.plugin.saveSettings();
         }),
       );

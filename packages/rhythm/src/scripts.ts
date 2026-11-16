@@ -63,9 +63,9 @@ export function h5Bar(bar: number): H5BarInfo {
   return { cycleBar: (bar % 4) + 1, isFillBar: bar % 4 === 3, completed: Math.floor(bar / 4) };
 }
 
-export type CueKind = "groove" | "ready" | "fill" | "return";
+export type H5CueKind = "groove" | "ready" | "fill" | "return";
 
-export function h5Cue(v: H5Variant, bar: number, beat: number): { text: string; kind: CueKind } {
+export function h5Cue(v: H5Variant, bar: number, beat: number): { text: string; kind: H5CueKind } {
   const info = h5Bar(bar);
   const f = H5_FILLS[v];
   if (info.cycleBar === 1 && beat === 0 && bar > 0) return { text: "回到 1", kind: "return" };

@@ -84,6 +84,11 @@ export class Metronome {
     this.muteEpoch = Math.max(0, nextPracticeBar);
   }
 
+  /** 7/8 換分組（格數不變，只改重音位置），從下一格起生效。 */
+  setGrouping7(g: ClickConfig["grouping7"]): void {
+    this.cfg.grouping7 = g;
+  }
+
   /** 拍號、細分等會改變格線的設定，執行中改動時重新開始。 */
   setConfig(p: Partial<ClickConfig>): void {
     const wasRunning = this.running;
@@ -146,7 +151,7 @@ export class Metronome {
       const muted = !countIn && isMutedBar(bar, this.cfg.muteOn, this.cfg.muteOff, this.muteEpoch);
       const level = levelAt(this.cfg, e.beatInBar);
       // 預備拍只響拍點，不響細分
-      const sounded = !muted && !(countIn && level === "sub");
+      const sounded = !muted && !(level === "sub" && (countIn || this.cfg.silentSubs));
       if (sounded) this.click(e.time, level);
       this.stats.minLeadMs = Math.min(this.stats.minLeadMs, (e.time - t) * 1000);
       this.stats.scheduled += 1;

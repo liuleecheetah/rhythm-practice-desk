@@ -71,3 +71,34 @@
 
 .rpd-topbar { display: flex; margin: 4px 0 8px; }
 .rpd-back { min-height: 44px; padding: 0 14px; }
+
+.rpd-pass-box { margin: 10px 0; padding: 8px 10px; border-left: 3px solid var(--interactive-accent); background: var(--background-secondary); border-radius: var(--radius-s); }
+.rpd-run-detail { text-align: center; min-height: 1.5em; }
+.rpd-meter { height: 14px; margin: 6px auto; width: min(78vw, 320px); border-radius: 7px; background: var(--background-secondary); overflow: hidden; }
+.rpd-meter-fill { height: 100%; background: var(--rpd-skin); transition: width 120ms linear; }
+.rpd-ring-label.is-play { color: var(--rpd-skin); font-weight: var(--font-bold); }
+.rpd-ring-label.is-change { color: var(--rpd-brass); font-weight: var(--font-bold); }
+.rpd-ring-label.is-foot { color: var(--rpd-brass); }
+
+/* ---------- 階段 3：徽章、成效、依場地 ---------- */
+.rpd-badge { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--background-modifier-border); }
+.rpd-badge:last-child { border-bottom: none; }
+.rpd-badge-mark { color: var(--text-faint); font-size: 1.1em; line-height: 1.4; }
+.rpd-badge.is-earned .rpd-badge-mark { color: var(--interactive-accent); }
+.rpd-badge.is-group { font-weight: var(--font-semibold); }
+
+.rpd-bars { width: 100%; max-width: 520px; display: block; }
+.rpd-bar { fill: var(--interactive-accent); opacity: 0.75; }
+.rpd-bar.is-now { opacity: 1; }
+.rpd-grid { stroke: var(--background-modifier-border); stroke-width: 1; }
+.rpd-axis { stroke: var(--text-faint); stroke-width: 1; }
+.rpd-tick { fill: var(--text-muted); font-size: 10px; }
+.rpd-hit { fill: transparent; cursor: pointer; }
+.rpd-tip { min-height: 1.5em; font-size: var(--font-ui-small); color: var(--text-normal); }
+.rpd-table { width: 100%; border-collapse: collapse; font-size: var(--font-ui-small); margin: 8px 0; }
+.rpd-table th, .rpd-table td { padding: 6px 4px; border-bottom: 1px solid var(--background-modifier-border); text-align: center; }
+.rpd-table th { color: var(--text-muted); font-weight: var(--font-semibold); }
+
+.rpd-plan { color: var(--text-muted); font-size: var(--font-ui-small); margin: 2px 0 6px; }
+.rpd-links { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 8px 0; }
+.rpd-h { margin: 18px 0 4px; }

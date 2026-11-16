@@ -31,11 +31,13 @@ export interface ClickConfig {
   muteOff: number;
   /** 開始前一小節預備拍 */
   countIn: boolean;
+  /** 細分格只顯示在環上、不發聲（例如 T3、T6 心裡數等分） */
+  silentSubs: boolean;
 }
 
 export const DEFAULT_CLICK: ClickConfig = {
   bpm: 70, meter: "4/4", grouping7: "2+2+3", subdivision: 1,
-  accentFirst: true, accentGroups: true, muteOn: 0, muteOff: 0, countIn: true,
+  accentFirst: true, accentGroups: true, muteOn: 0, muteOff: 0, countIn: true, silentSubs: false,
 };
 
 export const BPM_MIN = 30;

@@ -1,9 +1,9 @@
 {
   "id": "rhythm-practice-desk",
   "name": "節奏練習台",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "minAppVersion": "1.5.0",
-  "description": "打擊基本功練習、練習記錄與教材卡。目前是階段 2：節拍器與 T2、H5 練習腳本。",
+  "description": "打擊基本功練習、練習記錄與教材卡。目前是階段 3：29 個練習腳本、分期、等級與徽章。",
   "author": "liuleecheetah",
   "isDesktopOnly": false
 }
