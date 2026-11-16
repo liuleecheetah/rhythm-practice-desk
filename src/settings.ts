@@ -5,11 +5,14 @@ import type RhythmPracticeDesk from "./main";
 export interface RpdSettings {
   /** 外掛建立筆記的資料夾（相對於 vault 根目錄） */
   folder: string;
+  /** COURSE.md 的路徑；空白時用「筆記資料夾/COURSE.md」 */
+  coursePath: string;
   volume: number;
 }
 
 export const DEFAULT_SETTINGS: RpdSettings = {
   folder: "節奏練習台",
+  coursePath: "",
   volume: 0.8,
 };
 
@@ -27,6 +30,15 @@ export class RpdSettingTab extends PluginSettingTab {
       .addText((t) =>
         t.setValue(this.plugin.settings.folder).onChange(async (v) => {
           this.plugin.settings.folder = v.trim();
+          await this.plugin.saveSettings();
+        }),
+      );
+    new Setting(containerEl)
+      .setName("課程檔 COURSE.md")
+      .setDesc("練習說明頁從這個檔案顯示做法與檢查方法。空白時使用「筆記資料夾/COURSE.md」。")
+      .addText((t) =>
+        t.setPlaceholder(`${this.plugin.settings.folder}/COURSE.md`).setValue(this.plugin.settings.coursePath).onChange(async (v) => {
+          this.plugin.settings.coursePath = v.trim();
           await this.plugin.saveSettings();
         }),
       );

@@ -26,3 +26,43 @@
 .rpd-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 6px 0; }
 .rpd-wide { width: 100%; min-height: 52px !important; font-size: 1.05em; }
 .rpd-bottom { position: sticky; bottom: 0; background: var(--background-primary); padding: 8px 0; }
+
+/* ---------- 階段 2：節拍器與練習執行器 ---------- */
+/* 金＝時間參照（節拍器），皮＝手（沿用節奏練習台.html 的材質命名） */
+.rpd-root { --rpd-brass: var(--color-yellow); --rpd-skin: var(--color-orange); }
+.rpd-ring { position: relative; width: min(78vw, 320px); aspect-ratio: 1; margin: 8px auto; }
+.rpd-ring svg { width: 100%; height: 100%; display: block; }
+.rpd-ring-track { fill: none; stroke: var(--background-modifier-border); stroke-width: 2; }
+.rpd-ring.is-muted .rpd-ring-track { stroke-dasharray: 4 6; }
+.rpd-dot { fill: var(--background-modifier-border); transition: fill 60ms; }
+.rpd-dot.is-sub { fill: var(--background-modifier-border-hover); }
+.rpd-dot.is-one { stroke: var(--rpd-brass); stroke-width: 3; }
+.rpd-dot.is-group { stroke: var(--rpd-brass); stroke-width: 2; }
+.rpd-dot.is-hand { fill: color-mix(in srgb, var(--rpd-skin) 35%, transparent); }
+.rpd-dot.is-on { fill: var(--rpd-brass); }
+.rpd-dot.is-silent { fill: var(--text-faint); }
+.rpd-dot.is-hand.is-on, .rpd-dot.is-hand.is-silent { fill: var(--rpd-skin); }
+.rpd-ring-mid { position: absolute; inset: 22%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; }
+.rpd-ring-center { font-size: 3.2em; font-weight: var(--font-bold); line-height: 1; font-family: var(--font-monospace); }
+.rpd-ring-label { margin-top: 6px; font-size: var(--font-ui-medium); color: var(--text-muted); }
+.rpd-ring-label.is-rest { color: var(--text-faint); }
+.rpd-ring-label.is-ready { color: var(--rpd-skin); }
+.rpd-ring-label.is-fill { color: var(--rpd-skin); font-weight: var(--font-bold); }
+.rpd-ring-label.is-return { color: var(--rpd-brass); font-weight: var(--font-bold); }
+.rpd-run-info { text-align: center; color: var(--text-muted); }
+.rpd-run-timer { text-align: center; font-family: var(--font-monospace); font-size: 1.6em; margin: 4px 0 12px; }
+
+.rpd-bpm { display: grid; grid-template-columns: 1fr 1fr 2fr 1fr 1fr; gap: 6px; align-items: center; }
+.rpd-bpm-value { text-align: center; font-family: var(--font-monospace); font-size: 1.3em; font-weight: var(--font-bold); }
+.rpd-choice-4 { grid-template-columns: repeat(2, 1fr); }
+.rpd-choice-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+.rpd-choice-wrap button { flex: 1 1 auto; }
+.rpd-tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0; }
+.rpd-tag { font-size: var(--font-ui-smaller); padding: 2px 8px; border-radius: var(--radius-s); background: var(--background-secondary); border: 1px solid var(--background-modifier-border); }
+.rpd-pass { border-color: var(--interactive-accent); }
+.rpd-course summary { cursor: pointer; font-weight: var(--font-semibold); min-height: 44px; display: flex; align-items: center; }
+.rpd-big { font-size: 1.3em; font-weight: var(--font-bold); color: var(--interactive-accent); margin: 8px 0; }
+.rpd-warn-text { color: var(--text-warning); }
+.rpd-accent-text { color: var(--text-accent); }
+.rpd-secondary { margin-top: 8px; }
+.rpd-bottom .rpd-choice { margin: 0; }

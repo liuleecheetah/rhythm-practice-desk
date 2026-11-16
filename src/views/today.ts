@@ -6,6 +6,8 @@ import { CURRICULUM } from "../curriculum";
 import { suggestNext } from "../suggest";
 import { renderCells } from "./cells";
 import { NewRecordModal } from "./newRecord";
+import { hasScript } from "./runner";
+import { METRONOME_VIEW } from "./metronomeView";
 
 export const TODAY_VIEW = "rpd-today";
 
@@ -92,7 +94,10 @@ export class TodayView extends ItemView {
 
     // 主要按鈕在下方，單手可按
     const bottom = root.createDiv({ cls: "rpd-bottom" });
-    const add = bottom.createEl("button", { cls: "mod-cta rpd-wide", text: "新增練習記錄" });
+    const row2 = bottom.createDiv({ cls: "rpd-choice" });
+    const met = row2.createEl("button", { text: "節拍器" });
+    met.onclick = () => void this.plugin.openView(METRONOME_VIEW);
+    const add = row2.createEl("button", { cls: "mod-cta", text: "新增練習記錄" });
     add.onclick = () => this.openNew(stage.required[0], defaultPlace(stage.required[0]), p);
   }
 
@@ -114,7 +119,8 @@ export class TodayView extends ItemView {
     if (s.note) sub.push(s.note);
     if (ip.otherRecords.length) sub.push(`鼓上 ${ip.otherRecords.length} 則`);
     if (sub.length) row.createDiv({ cls: "rpd-desc", text: sub.join("｜") });
-    row.onclick = () => this.openNew(id, place, p);
+    if (hasScript(id)) row.createDiv({ cls: "rpd-desc rpd-accent-text", text: "點這裡開始練習（有節拍器腳本）" });
+    row.onclick = () => (hasScript(id) ? void this.plugin.openRunner(id) : this.openNew(id, place, p));
   }
 
   private recordRow(parent: HTMLElement, r: LearningRecord): void {
