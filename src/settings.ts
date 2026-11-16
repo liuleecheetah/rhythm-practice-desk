@@ -23,7 +23,7 @@ export class RpdSettingTab extends PluginSettingTab {
     containerEl.empty();
     new Setting(containerEl)
       .setName("筆記資料夾")
-      .setDesc("外掛只在這個資料夾內建立與修改檔案。路徑相對於 vault 根目錄。")
+      .setDesc("外掛只在這個資料夾內建立檔案。練習記錄放在其中的「練習日誌」子資料夾。路徑相對於 vault 根目錄。")
       .addText((t) =>
         t.setValue(this.plugin.settings.folder).onChange(async (v) => {
           this.plugin.settings.folder = v.trim();

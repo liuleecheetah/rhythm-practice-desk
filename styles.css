@@ -1,21 +1,28 @@
 /* 只用 Obsidian 的 CSS 變數，深淺色主題都適用 */
-.rpd-root { padding-bottom: 96px; }
-.rpd-root button { min-height: 44px; min-width: 44px; }
+.rpd-root { padding-bottom: 24px; }
+.rpd-root button, .rpd-modal button { min-height: 44px; min-width: 44px; }
 .rpd-desc { color: var(--text-muted); font-size: var(--font-ui-small); }
-.rpd-tabs, .rpd-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; }
-.rpd-section { margin: 16px 0; padding: 12px; border: 1px solid var(--background-modifier-border); border-radius: var(--radius-m); }
-.rpd-section h3 { margin-top: 0; }
-.rpd-status { font-family: var(--font-monospace); font-size: var(--font-ui-small); color: var(--text-muted); margin: 8px 0; }
-.rpd-log { font-family: var(--font-monospace); font-size: var(--font-ui-smaller); color: var(--text-faint); max-height: 160px; overflow-y: auto; }
-.rpd-check { display: flex; align-items: center; gap: 6px; min-height: 44px; }
-.rpd-verdict { padding: 8px 0; border-bottom: 1px solid var(--background-modifier-border); }
-.rpd-verdict-btns { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
-.rpd-ring { position: relative; width: min(70vw, 260px); aspect-ratio: 1; margin: 16px auto; border: 2px solid var(--background-modifier-border); border-radius: 50%; }
-.rpd-dot { position: absolute; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%; background: var(--background-modifier-border); }
-.rpd-dot-one { outline: 2px solid var(--text-accent); }
-.rpd-dot-on { background: var(--interactive-accent); }
-.rpd-ring-center { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 2.5em; font-weight: var(--font-bold); }
-.rpd-tap { width: 100%; min-height: 96px !important; font-size: 1.2em; }
-.rpd-notes { width: 100%; min-height: 80px; }
-.rpd-report { white-space: pre-wrap; font-size: var(--font-ui-smaller); background: var(--background-secondary); padding: 8px; border-radius: var(--radius-s); }
+.rpd-label { font-weight: var(--font-semibold); margin: 12px 0 4px; }
+.rpd-section { margin: 12px 0; padding: 12px; border: 1px solid var(--background-modifier-border); border-radius: var(--radius-m); }
+.rpd-section h2, .rpd-section h3 { margin: 0 0 6px; }
+.rpd-warn { border-color: var(--text-warning); }
+
+.rpd-ex, .rpd-row-link { display: block; padding: 10px 4px; min-height: 44px; border-bottom: 1px solid var(--background-modifier-border); cursor: pointer; }
+.rpd-ex:last-child, .rpd-row-link:last-child { border-bottom: none; }
+.rpd-ex { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; align-items: center; }
+.rpd-ex .rpd-desc { grid-column: 1 / -1; }
+.rpd-ex-main { display: flex; gap: 8px; align-items: baseline; }
+.rpd-code { font-family: var(--font-monospace); font-weight: var(--font-bold); color: var(--text-accent); }
+
+.rpd-cells { display: inline-flex; gap: 4px; }
+.rpd-cell { width: 18px; height: 18px; border-radius: var(--radius-s); border: 2px solid var(--interactive-accent); }
+.rpd-cell.is-filled { background: var(--interactive-accent); }
+
+.rpd-goals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
+.rpd-goal { padding: 8px 4px; border-radius: var(--radius-s); background: var(--background-secondary); }
+.rpd-goal.is-met { outline: 2px solid var(--interactive-accent); }
+.rpd-goal-num { font-size: 1.4em; font-weight: var(--font-bold); font-family: var(--font-monospace); }
+
+.rpd-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 6px 0; }
+.rpd-wide { width: 100%; min-height: 52px !important; font-size: 1.05em; }
 .rpd-bottom { position: sticky; bottom: 0; background: var(--background-primary); padding: 8px 0; }

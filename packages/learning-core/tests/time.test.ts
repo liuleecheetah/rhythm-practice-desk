@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { fileStamp, localIsoMinute } from "../src/time";
+import { fileStamp, localIsoMinute } from "../src/core/time";
 
 describe("time", () => {
   const d = new Date(2026, 10, 8, 9, 5);
