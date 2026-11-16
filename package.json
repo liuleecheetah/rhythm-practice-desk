@@ -8,7 +8,7 @@
     "build": "tsc --noEmit && node esbuild.config.mjs production",
     "test": "vitest run"
   },
-  "license": "MIT",
+  "license": "UNLICENSED",
   "devDependencies": {
     "esbuild": "^0.25.12",
     "obsidian": "1.14.4",

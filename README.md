@@ -30,6 +30,10 @@ npm test
 npm run build
 ```
 
+## 授權
+
+保留所有權利，見 [LICENSE](LICENSE)。
+
 ## 隱私
 
 不做帳號、雲端、遙測。外掛只讀寫 vault 裡你指定的資料夾。

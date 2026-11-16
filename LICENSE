@@ -1,0 +1,11 @@
+Copyright (c) 2026 liuleecheetah. All rights reserved.
+
+本儲存庫的原始碼與文件保留所有權利。公開於 GitHub 僅供作者本人安裝與測試使用，
+未經作者書面同意，不得複製、修改、散布、再授權或販售。
+
+All rights reserved. This repository is published publicly only so that the
+author can install and test the plugin. No permission is granted to copy,
+modify, distribute, sublicense, or sell any part of it without the author's
+prior written consent.
+
+0.0.1 至 0.2.2 版曾在 package.json 標示 MIT；自本檔案加入後的版本適用上述條款。
