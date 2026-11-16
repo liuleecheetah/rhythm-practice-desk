@@ -109,3 +109,24 @@
 /* 練習中：環縮小，讓環、提示、計時與「結束」在同一個畫面 */
 .rpd-root.is-running .rpd-ring { width: min(64vw, 38vh, 300px); }
 .rpd-root.is-running h2 { font-size: 1.15em; margin: 4px 0; }
+
+/* ---------- 階段 4：節奏卡 ---------- */
+.rpd-notation { margin: 6px 0; }
+.rpd-nring { width: min(70vw, 240px); display: block; margin: 0 auto 8px; }
+.rpd-ndot { fill: var(--background-modifier-border); }
+.rpd-ndot.is-accent { fill: var(--rpd-skin, var(--color-orange)); }
+.rpd-ndot.is-light { fill: none; stroke: var(--rpd-skin, var(--color-orange)); stroke-width: 1.5; }
+.rpd-ndot.is-start { stroke: var(--rpd-brass, var(--color-yellow)); stroke-width: 2; }
+.rpd-grid { overflow-x: auto; }
+.rpd-grid-row { display: flex; align-items: center; gap: 6px; margin: 4px 0; }
+.rpd-grid-label { min-width: 2.5em; font-size: var(--font-ui-small); color: var(--text-muted); }
+.rpd-grid-cells { display: flex; gap: 2px; flex: 1; min-width: 0; }
+.rpd-gcell { flex: 1 1 0; min-width: 11px; max-width: 24px; height: 26px; display: flex; align-items: center; justify-content: center; font-family: var(--font-monospace); font-size: 12px; border-radius: 3px; background: var(--background-secondary); color: var(--text-faint); }
+.rpd-gcell.is-start { margin-left: 4px; box-shadow: inset 2px 0 0 var(--rpd-brass, var(--color-yellow)); }
+.rpd-gcell:first-child { margin-left: 0; }
+.rpd-gcell.is-accent { background: var(--rpd-skin, var(--color-orange)); color: var(--text-on-accent, #fff); font-weight: var(--font-bold); }
+.rpd-gcell.is-light { color: var(--rpd-skin, var(--color-orange)); border: 1px solid var(--rpd-skin, var(--color-orange)); background: transparent; }
+.rpd-video { padding: 8px 0; border-bottom: 1px solid var(--background-modifier-border); }
+.rpd-seg { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 44px; }
+.rpd-small { min-height: 36px !important; font-size: var(--font-ui-smaller); }
+.rpd-form summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; color: var(--text-accent); }

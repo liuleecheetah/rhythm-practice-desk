@@ -12,6 +12,7 @@ import { hasScript, PAIR_SECONDS } from "./runner";
 import { METRONOME_VIEW } from "./metronomeView";
 import { BADGES_VIEW } from "./badges";
 import { STATS_VIEW } from "./stats";
+import { CARDS_VIEW } from "./cards";
 import { trackBottomOffset } from "./layout";
 
 export const TODAY_VIEW = "rpd-today";
@@ -159,6 +160,8 @@ export class TodayView extends ItemView {
     }
     const s = links.createEl("button", { text: "成效（最近 8 週）" });
     s.onclick = () => void this.plugin.openView(STATS_VIEW);
+    const cards = links.createEl("button", { text: "節奏卡" });
+    cards.onclick = () => void this.plugin.openView(CARDS_VIEW, { path: null });
 
     // ---- 主要按鈕在下方，單手可按 ----
     const bottom = root.createDiv({ cls: "rpd-bottom" });

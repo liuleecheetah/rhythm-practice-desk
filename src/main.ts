@@ -10,6 +10,7 @@ import { AudioHost } from "./audio";
 import { BadgesView, BADGES_VIEW } from "./views/badges";
 import { StatsView, STATS_VIEW } from "./views/stats";
 import type { RunnerState } from "./views/runner";
+import { CardsView, CARDS_VIEW, CARD_TYPE, cardFolderPath } from "./views/cards";
 
 export default class RhythmPracticeDesk extends Plugin {
   settings: RpdSettings = { ...DEFAULT_SETTINGS };
@@ -27,6 +28,7 @@ export default class RhythmPracticeDesk extends Plugin {
     this.registerView(METRONOME_VIEW, (leaf) => new MetronomeView(leaf, this));
     this.registerView(BADGES_VIEW, (leaf) => new BadgesView(leaf, this));
     this.registerView(STATS_VIEW, (leaf) => new StatsView(leaf, this));
+    this.registerView(CARDS_VIEW, (leaf) => new CardsView(leaf, this));
     this.addRibbonIcon("drum", "節奏練習台：今日頁", () => void this.openToday());
     this.addCommand({ id: "open-today", name: "開啟今日頁", callback: () => void this.openToday() });
     this.addCommand({
@@ -37,6 +39,17 @@ export default class RhythmPracticeDesk extends Plugin {
     this.addCommand({ id: "open-metronome", name: "開啟節拍器", callback: () => void this.openView(METRONOME_VIEW) });
     this.addCommand({ id: "open-badges", name: "開啟徽章頁", callback: () => void this.openView(BADGES_VIEW) });
     this.addCommand({ id: "open-stats", name: "開啟成效頁", callback: () => void this.openView(STATS_VIEW) });
+    this.addCommand({ id: "open-cards", name: "開啟節奏卡清單", callback: () => void this.openView(CARDS_VIEW, { path: null }) });
+    this.addCommand({
+      id: "show-current-card",
+      name: "在節奏卡面板顯示目前的筆記",
+      checkCallback: (checking) => {
+        const f = this.app.workspace.getActiveFile();
+        const ok = !!f && this.app.metadataCache.getFileCache(f)?.frontmatter?.type === CARD_TYPE;
+        if (ok && !checking) void this.openView(CARDS_VIEW, { path: f!.path });
+        return ok;
+      },
+    });
     this.addSettingTab(new RpdSettingTab(this.app, this));
   }
 
@@ -46,6 +59,10 @@ export default class RhythmPracticeDesk extends Plugin {
 
   coursePath(): string {
     return normalizePath(this.settings.coursePath || `${this.settings.folder}/COURSE.md`);
+  }
+
+  cardFolder(): string {
+    return cardFolderPath(this.settings.folder, this.settings.cardFolder);
   }
 
   async readCourse(): Promise<string | null> {

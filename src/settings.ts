@@ -7,6 +7,8 @@ export interface RpdSettings {
   folder: string;
   /** COURSE.md 的路徑；空白時用「筆記資料夾/COURSE.md」 */
   coursePath: string;
+  /** 新增節奏卡放的資料夾；空白時用「筆記資料夾/節奏卡」 */
+  cardFolder: string;
   volume: number;
   /** 顯示等級、徽章與每週目標（COURSE.md：連續 4 週練習次數沒有增加就關閉） */
   showGamification: boolean;
@@ -15,6 +17,7 @@ export interface RpdSettings {
 export const DEFAULT_SETTINGS: RpdSettings = {
   folder: "節奏練習台",
   coursePath: "",
+  cardFolder: "",
   volume: 0.8,
   showGamification: true,
 };
@@ -42,6 +45,15 @@ export class RpdSettingTab extends PluginSettingTab {
       .addText((t) =>
         t.setPlaceholder(`${this.plugin.settings.folder}/COURSE.md`).setValue(this.plugin.settings.coursePath).onChange(async (v) => {
           this.plugin.settings.coursePath = v.trim();
+          await this.plugin.saveSettings();
+        }),
+      );
+    new Setting(containerEl)
+      .setName("節奏卡資料夾")
+      .setDesc("「新增節奏卡」建立的新卡片放在這裡（例如你的 1_Knowledge 路徑）。外掛會讀取整個 vault 的節奏卡，但只在這裡建立新檔。空白時使用「筆記資料夾/節奏卡」。")
+      .addText((t) =>
+        t.setPlaceholder(`${this.plugin.settings.folder}/節奏卡`).setValue(this.plugin.settings.cardFolder).onChange(async (v) => {
+          this.plugin.settings.cardFolder = v.trim();
           await this.plugin.saveSettings();
         }),
       );

@@ -4,3 +4,4 @@ export * from "./metronome";
 export * from "./course";
 export * from "./scripts";
 export * from "./registry";
+export * from "./notation";
