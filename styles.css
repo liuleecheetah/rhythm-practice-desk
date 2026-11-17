@@ -130,3 +130,13 @@
 .rpd-seg { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 44px; }
 .rpd-small { min-height: 36px !important; font-size: var(--font-ui-smaller); }
 .rpd-form summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; color: var(--text-accent); }
+
+.rpd-editor { margin: 8px 0; padding: 8px; border-radius: var(--radius-m); background: var(--background-secondary); }
+.rpd-track-edit { margin: 10px 0; padding-top: 8px; border-top: 1px solid var(--background-modifier-border); }
+.rpd-voice-row { display: grid; grid-template-columns: 3.5em 1fr auto; gap: 6px; margin: 4px 0; }
+.rpd-voice-row input { min-height: 40px; }
+.rpd-hits { width: 100%; font-family: var(--font-monospace); font-size: 16px; letter-spacing: 0.08em; }
+.rpd-tap-grid { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 10px; }
+.rpd-tap-group { display: flex; gap: 3px; }
+.rpd-tap-grid .rpd-gcell { flex: none; width: 34px; max-width: none; height: 44px; padding: 0; margin: 0; box-shadow: none; font-size: 15px; }
+.rpd-gcell.is-bad { background: transparent; border: 1px dashed var(--text-error); color: var(--text-error); }

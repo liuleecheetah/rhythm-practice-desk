@@ -5,6 +5,7 @@
 import { App, ItemView, Modal, Notice, Setting, TFile, ViewStateResult, WorkspaceLeaf, normalizePath } from "obsidian";
 import { createNewNote, extractVideoId, formatTime, parseMaterialCard, parseTime, youtubeWatchUrl, type MaterialCard } from "@rpd/learning-core";
 import { parseNotation, type Notation } from "@rpd/rhythm";
+import { draftFromFm, draftPattern, parseGroups, renderEditor } from "./notationEditor";
 import type RhythmPracticeDesk from "../main";
 import { backBar, trackBottomOffset } from "./layout";
 
@@ -31,6 +32,8 @@ export function listCards(app: App): CardEntry[] {
 
 export class CardsView extends ItemView {
   private path: string | null = null;
+  /** 正在編輯的區塊：基本資料、基本型、第 i 個變形、新變形 */
+  private editing: "meta" | "base" | "new" | number | null = null;
   private untrack: (() => void) | null = null;
 
   constructor(leaf: WorkspaceLeaf, private plugin: RhythmPracticeDesk) {
@@ -56,6 +59,7 @@ export class CardsView extends ItemView {
     // 卡片在別處被修改（例如手改 YAML）時重畫
     this.registerEvent(this.app.metadataCache.on("changed", (f) => {
       const fm = this.app.metadataCache.getFileCache(f)?.frontmatter;
+      if (this.editing !== null) return; // 編輯中不重畫，以免清掉表單
       if (f.path === this.path || (!this.path && fm?.type === CARD_TYPE)) this.render();
     }));
     this.render();
@@ -67,6 +71,7 @@ export class CardsView extends ItemView {
 
   private show(path: string | null): void {
     this.path = path;
+    this.editing = null;
     this.render();
   }
 
@@ -118,44 +123,118 @@ export class CardsView extends ItemView {
     if (fm.tradition) tags.createSpan({ cls: "rpd-tag", text: String(fm.tradition) });
     for (const s of Array.isArray(fm.structure) ? fm.structure : []) tags.createSpan({ cls: "rpd-tag", text: String(s) });
     head.createDiv({ cls: "rpd-desc", text: card.source ? `出處：${card.source}` : "出處：（空白）" });
-    const open = head.createEl("button", { text: "打開筆記（文化脈絡、演奏說明）" });
+    const hb = head.createDiv({ cls: "rpd-choice" });
+    const open = hb.createEl("button", { text: "打開筆記" });
     open.onclick = () => void this.app.workspace.getLeaf(false).openFile(f);
+    const metaBtn = hb.createEl("button", { text: "編輯基本資料" });
+    metaBtn.onclick = () => { this.editing = "meta"; this.render(); };
+    if (this.editing === "meta") this.metaForm(head, f, fm);
 
     // 鼓譜
-    const main = parseNotation(fm, "基本型");
     const notationErrors: string[] = [];
-    if (main) {
-      const sec = root.createDiv({ cls: "rpd-section" });
-      sec.createEl("h3", { text: "基本型" });
-      if (main.errors.length) sec.createDiv({ cls: "rpd-desc rpd-warn-text", text: "鼓譜格式有錯，先不畫出來；原因見下方警告。" });
-      else drawNotation(sec, main);
-      notationErrors.push(...main.errors);
+    const main = parseNotation(fm, "基本型");
+    const baseSec = root.createDiv({ cls: "rpd-section" });
+    baseSec.createEl("h3", { text: "基本型" });
+    if (this.editing === "base") {
+      renderEditor(baseSec, draftFromFm(fm, fm.pattern), {
+        isVariation: false,
+        evidenceLevels: CARD_EVIDENCE,
+        onCancel: () => { this.editing = null; this.render(); },
+        onSave: async (d, n) => {
+          await this.editFm(f, (x) => {
+            x.meter = d.meter;
+            x.subdivision = d.subdivision;
+            x.groups = parseGroups(d.groups) ?? [];
+            x.pattern = draftPattern(d, n);
+          });
+          this.editing = null;
+          this.render();
+        },
+      });
+    } else {
+      if (main) {
+        if (main.errors.length) baseSec.createDiv({ cls: "rpd-desc rpd-warn-text", text: "鼓譜格式有錯，先不畫出來；原因見下方警告。" });
+        else drawNotation(baseSec, main);
+        notationErrors.push(...main.errors);
+      } else baseSec.createDiv({ cls: "rpd-desc", text: "還沒有鼓譜。" });
+      const eb = baseSec.createEl("button", { text: main ? "編輯鼓譜" : "新增鼓譜" });
+      eb.onclick = () => { this.editing = "base"; this.render(); };
     }
-    const variations = Array.isArray(fm.variations) ? fm.variations : [];
-    variations.forEach((v: Record<string, unknown>, i: number) => {
-      const label = String(v?.label ?? `變形 ${i + 1}`);
+
+    const variations: Record<string, unknown>[] = Array.isArray(fm.variations) ? fm.variations : [];
+    variations.forEach((v, i) => {
+      const label = String(v?.label ?? "").trim() || `變形 ${i + 1}`;
       const sec = root.createDiv({ cls: "rpd-section" });
       sec.createEl("h3", { text: `變形：${label}` });
+      if (this.editing === i) {
+        renderEditor(sec, draftFromFm(fm, v?.pattern, v), {
+          isVariation: true,
+          evidenceLevels: CARD_EVIDENCE,
+          onCancel: () => { this.editing = null; this.render(); },
+          onSave: async (d, n) => {
+            await this.editFm(f, (x) => {
+              const list = Array.isArray(x.variations) ? (x.variations as Record<string, unknown>[]) : [];
+              list[i] = { ...(list[i] ?? {}), label: d.variation!.label, evidence: d.variation!.evidence, source: d.variation!.source, pattern: draftPattern(d, n) };
+              x.variations = list;
+            });
+            this.editing = null;
+            this.render();
+          },
+          onDelete: async () => {
+            await this.editFm(f, (x) => {
+              const list = Array.isArray(x.variations) ? (x.variations as unknown[]) : [];
+              list.splice(i, 1);
+              x.variations = list;
+            });
+            this.editing = null;
+            this.render();
+          },
+        });
+        return;
+      }
       const t = sec.createDiv({ cls: "rpd-tags" });
       if (v?.evidence) t.createSpan({ cls: "rpd-tag", text: String(v.evidence) });
       else notationErrors.push(`變形「${label}」沒有標依據分級`);
       if (v?.evidence && !(CARD_EVIDENCE as readonly string[]).includes(String(v.evidence))) notationErrors.push(`變形「${label}」的依據分級「${v.evidence}」不是 ${CARD_EVIDENCE.join("｜")} 其中之一`);
       sec.createDiv({ cls: "rpd-desc", text: v?.source ? `出處：${v.source}` : "出處：（空白）" });
-      const n = parseNotation({ ...fm, ...(v?.groups ? { groups: v.groups } : {}), pattern: v?.pattern }, `變形「${label}」`);
+      const n = parseNotation({ ...fm, pattern: v?.pattern }, `變形「${label}」`);
       if (n) {
         if (n.errors.length) sec.createDiv({ cls: "rpd-desc rpd-warn-text", text: "鼓譜格式有錯，先不畫出來；原因見下方警告。" });
         else drawNotation(sec, n);
         notationErrors.push(...n.errors);
       }
+      const eb = sec.createEl("button", { text: "編輯這個變形" });
+      eb.onclick = () => { this.editing = i; this.render(); };
     });
-    if (!main && !variations.length) root.createDiv({ cls: "rpd-desc", text: "這張卡還沒有鼓譜（pattern）。格式見 docs/資料格式.md 第 4 節。" });
+    if (this.editing === "new") {
+      const sec = root.createDiv({ cls: "rpd-section" });
+      sec.createEl("h3", { text: "新增變形" });
+      const d = draftFromFm(fm, [], {});
+      renderEditor(sec, d, {
+        isVariation: true,
+        evidenceLevels: CARD_EVIDENCE,
+        onCancel: () => { this.editing = null; this.render(); },
+        onSave: async (dd, n) => {
+          await this.editFm(f, (x) => {
+            const list = Array.isArray(x.variations) ? (x.variations as unknown[]) : [];
+            list.push({ label: dd.variation!.label, evidence: dd.variation!.evidence, source: dd.variation!.source, pattern: draftPattern(dd, n) });
+            x.variations = list;
+          });
+          this.editing = null;
+          this.render();
+        },
+      });
+    } else if (main && this.editing === null) {
+      const nb = root.createEl("button", { cls: "rpd-wide rpd-secondary", text: "新增變形" });
+      nb.onclick = () => { this.editing = "new"; this.render(); };
+    }
 
     // 警告
     const warnings = [...card.warnings, ...notationErrors];
     if (warnings.length) {
       const w = root.createDiv({ cls: "rpd-section rpd-warn" });
       w.createEl("h3", { text: `${warnings.length} 個警告` });
-      w.createDiv({ cls: "rpd-desc", text: "卡片照樣可以使用；請打開筆記修正 frontmatter。格式錯誤的鼓譜不會畫出來。" });
+      w.createDiv({ cls: "rpd-desc", text: "卡片照樣可以使用。請用「編輯基本資料」或「編輯鼓譜」修正；格式錯誤的鼓譜不會畫出來。" });
       const ul = w.createEl("ul");
       for (const x of warnings) ul.createEl("li", { text: x });
     }
@@ -203,9 +282,9 @@ export class CardsView extends ItemView {
     const d = parent.createEl("details", { cls: "rpd-form" });
     d.createEl("summary", { text: "新增段落" });
     let label = "", start = "", end = "", rate = "";
-    new Setting(d).setName("名稱").addText((t) => t.setPlaceholder("基本型").onChange((v) => (label = v.trim())));
-    new Setting(d).setName("起點").setDesc("例如 1:23 或 83（秒）").addText((t) => t.setPlaceholder("1:23").onChange((v) => (start = v)));
-    new Setting(d).setName("終點").setDesc("選填").addText((t) => t.setPlaceholder("1:41").onChange((v) => (end = v)));
+    new Setting(d).setName("名稱").addText((t) => t.setPlaceholder("填入名稱").onChange((v) => (label = v.trim())));
+    new Setting(d).setName("起點").setDesc("格式：分:秒，或秒數").addText((t) => t.setPlaceholder("填入時間").onChange((v) => (start = v)));
+    new Setting(d).setName("終點").setDesc("選填；格式同起點").addText((t) => t.setPlaceholder("填入時間").onChange((v) => (end = v)));
     new Setting(d).setName("速度").setDesc("選填，0.5／0.75／1；保留給日後的內嵌播放器").addDropdown((dd) => {
       dd.addOption("", "（不指定）").addOption("0.5", "0.5").addOption("0.75", "0.75").addOption("1", "1");
       dd.onChange((v) => (rate = v));
@@ -214,7 +293,7 @@ export class CardsView extends ItemView {
     save.onclick = async () => {
       const s = parseTime(start);
       const e = end.trim() ? parseTime(end) : null;
-      if (s === null) return void new Notice("起點讀不懂，請寫成 1:23 或 83");
+      if (s === null) return void new Notice("起點讀不懂，請寫成「分:秒」或秒數");
       if (end.trim() && (e === null || e <= s)) return void new Notice("終點讀不懂，或早於起點");
       await this.editVideos(f, (videos) => {
         const segs = Array.isArray(videos[vi].segments) ? (videos[vi].segments as unknown[]) : [];
@@ -231,8 +310,8 @@ export class CardsView extends ItemView {
     const d = parent.createEl("details", { cls: "rpd-form" });
     d.createEl("summary", { text: "加一部影片" });
     let url = "", label = "";
-    new Setting(d).setName("YouTube 網址").addText((t) => t.setPlaceholder("https://www.youtube.com/watch?v=…").onChange((v) => (url = v.trim())));
-    new Setting(d).setName("名稱").addText((t) => t.setPlaceholder("範例演奏").onChange((v) => (label = v.trim())));
+    new Setting(d).setName("YouTube 網址").addText((t) => t.setPlaceholder("填入網址").onChange((v) => (url = v.trim())));
+    new Setting(d).setName("名稱").addText((t) => t.setPlaceholder("填入名稱").onChange((v) => (label = v.trim())));
     const save = d.createEl("button", { cls: "mod-cta", text: "加入影片" });
     save.onclick = async () => {
       if (!extractVideoId(url)) return void new Notice("讀不出 YouTube 影片 ID，請貼完整網址");
@@ -244,16 +323,56 @@ export class CardsView extends ItemView {
 
   /** 只改 videos 欄位 */
   private async editVideos(f: TFile, edit: (videos: Record<string, unknown>[]) => void): Promise<void> {
+    await this.editFm(f, (fm) => {
+      const videos = Array.isArray(fm.videos) ? (fm.videos as Record<string, unknown>[]).map((v) => (v && typeof v === "object" ? v : { url: String(v) })) : [];
+      edit(videos);
+      fm.videos = videos;
+    });
+  }
+
+  /** 用 processFrontMatter 改這張卡片的 frontmatter；內文不動 */
+  private async editFm(f: TFile, edit: (fm: Record<string, unknown>) => void): Promise<void> {
     try {
-      await this.app.fileManager.processFrontMatter(f, (fm: Record<string, unknown>) => {
-        const videos = Array.isArray(fm.videos) ? (fm.videos as Record<string, unknown>[]).map((v) => (v && typeof v === "object" ? v : { url: String(v) })) : [];
-        edit(videos);
-        fm.videos = videos;
-      });
+      await this.app.fileManager.processFrontMatter(f, edit);
       new Notice("已寫入卡片");
     } catch (e) {
       new Notice(`寫入失敗：${(e as Error).message}`);
     }
+  }
+
+  private metaForm(parent: HTMLElement, f: TFile, fm: Record<string, unknown>): void {
+    const box = parent.createDiv({ cls: "rpd-editor" });
+    const d = {
+      title: String(fm.title ?? ""),
+      source: String(fm.source ?? ""),
+      evidence: String(fm.evidence ?? ""),
+      tradition: String(fm.tradition ?? ""),
+      structure: Array.isArray(fm.structure) ? fm.structure.join("、") : "",
+    };
+    new Setting(box).setName("名稱").addText((t) => t.setPlaceholder("填入名稱").setValue(d.title).onChange((v) => (d.title = v.trim())));
+    new Setting(box).setName("出處").setDesc("必填").addText((t) => t.setPlaceholder("填入出處").setValue(d.source).onChange((v) => (d.source = v.trim())));
+    new Setting(box).setName("依據分級").addDropdown((dd) => {
+      dd.addOption("", "請選擇");
+      for (const e of CARD_EVIDENCE) dd.addOption(e, e);
+      dd.setValue(d.evidence).onChange((v) => (d.evidence = v));
+    });
+    new Setting(box).setName("地理來源").setDesc("僅作索引").addText((t) => t.setPlaceholder("填入地理來源").setValue(d.tradition).onChange((v) => (d.tradition = v.trim())));
+    new Setting(box).setName("結構標籤").setDesc("用頓號或逗號分隔").addText((t) => t.setPlaceholder("填入標籤").setValue(d.structure).onChange((v) => (d.structure = v)));
+    const row = box.createDiv({ cls: "rpd-choice" });
+    const cancel = row.createEl("button", { text: "取消" });
+    cancel.onclick = () => { this.editing = null; this.render(); };
+    const save = row.createEl("button", { cls: "mod-cta", text: "儲存" });
+    save.onclick = async () => {
+      await this.editFm(f, (x) => {
+        x.title = d.title;
+        x.source = d.source;
+        x.evidence = d.evidence;
+        x.tradition = d.tradition;
+        x.structure = d.structure.split(/[、,，]/).map((z) => z.trim()).filter(Boolean);
+      });
+      this.editing = null;
+      this.render();
+    };
   }
 }
 
@@ -310,7 +429,7 @@ class NewCardModal extends Modal {
   }
   onOpen(): void {
     this.setTitle("新增節奏卡");
-    new Setting(this.contentEl).setName("名稱").addText((t) => t.onChange((v) => (this.title = v.trim())));
+    new Setting(this.contentEl).setName("名稱").addText((t) => t.setPlaceholder("填入名稱").onChange((v) => (this.title = v.trim())));
     this.contentEl.createDiv({ cls: "rpd-desc", text: `建在：${this.plugin.cardFolder()}` });
     const go = this.contentEl.createEl("button", { cls: "mod-cta rpd-wide", text: "建立" });
     go.onclick = async () => {
@@ -320,18 +439,10 @@ class NewCardModal extends Modal {
         "type: rhythm-card",
         `title: ${JSON.stringify(this.title)}`,
         'source: ""',
-        "evidence: 推論重建",
+        'evidence: ""',
         'tradition: ""',
         "structure: []",
-        "meter: 4/4",
-        "subdivision: 4",
-        "groups: []",
-        "voices:",
-        "  D: Dum",
-        "  T: Tak",
-        "pattern:",
-        "  - track: 皮",
-        '    hits: "D... T... D... T..."',
+        "pattern: []",
         "variations: []",
         "videos: []",
         "---",
@@ -343,13 +454,6 @@ class NewCardModal extends Modal {
         "## 演奏說明",
         "",
         "## 依據說明",
-        "",
-        "## 欄位說明",
-        "",
-        "- source：出處，必填。evidence：可查依據｜轉述｜推論重建。",
-        "- hits：一個字元一格；「.」休止；大寫＝重音或骨架音，小寫＝輕音或裝飾音；空白與 | 只用來分隔。",
-        "- 每一軌的格數＝拍號分子 × subdivision（有 groups 時＝groups 的總和）。",
-        "- 鼓譜範例是預留的格子，請換成你查到的內容，並更新 evidence。",
         "",
       ].join("\n");
       try {

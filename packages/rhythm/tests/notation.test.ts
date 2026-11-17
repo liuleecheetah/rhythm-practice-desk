@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseNotation } from "../src/notation";
+import { parseNotation, cycleCell, formatHits } from "../src/notation";
 
 const voices = { D: "Dum", T: "Tak", K: "Ka" };
 
@@ -25,7 +25,37 @@ describe("parseNotation", () => {
     const n = parseNotation({ meter: "4/4", subdivision: 4, voices, pattern: [{ track: "皮", hits: "D.X." }] })!;
     expect(n.errors.join("\n")).toMatch(/4 格，應為 16 格/);
     expect(n.errors.join("\n")).toMatch(/X/);
-    expect(parseNotation({ pattern: [{ hits: "D..." }] })!.errors.join("\n")).toMatch(/voices/);
+    expect(parseNotation({ pattern: [{ hits: "D..." }] })!.errors.join("\n")).toMatch(/音名/);
   });
-  it("沒有 pattern 時不畫鼓譜", () => expect(parseNotation({ meter: "4/4" })).toBeNull());
+  it("沒有 pattern、或 pattern 是空清單時不畫鼓譜", () => {
+    expect(parseNotation({ meter: "4/4" })).toBeNull();
+    expect(parseNotation({ meter: "4/4", pattern: [] })).toBeNull();
+  });
+  it("每一軌可以有自己的音名（不同樂器）", () => {
+    const n = parseNotation({ meter: "4/4", subdivision: 1, pattern: [
+      { track: "djembe", voices: { B: "Bass", T: "Tone", S: "Slap" }, hits: "BtsS" },
+      { track: "鈴", voices: { X: "鈴" }, hits: "X.X." },
+    ] })!;
+    expect(n.errors).toEqual([]);
+    expect(n.tracks[0].cells.map((c) => c?.name)).toEqual(["Bass", "Tone", "Slap", "Slap"]);
+    expect(n.tracks[1].cells[0]?.name).toBe("鈴");
+  });
+  it("一軌用到另一軌的音名算錯誤", () => {
+    const n = parseNotation({ meter: "4/4", subdivision: 1, pattern: [{ track: "鈴", voices: { X: "鈴" }, hits: "XB.." }] })!;
+    expect(n.errors.join()).toMatch(/B/);
+  });
+});
+
+describe("編輯輔助", () => {
+  it("點格子依序換音：休止 → B → b → T → t → 休止", () => {
+    let h = "....";
+    const seq: string[] = [];
+    for (let i = 0; i < 5; i++) { h = cycleCell(h, 1, ["B", "T"], 4); seq.push(h[1]); }
+    expect(seq).toEqual(["B", "b", "T", "t", "."]);
+  });
+  it("格數不足時補休止再換", () => expect(cycleCell("B", 3, ["B"], 4)).toBe("B..B"));
+  it("依分組加空白", () => {
+    expect(formatHits("D.T...T.D...T...", [4, 4, 4, 4])).toBe("D.T. ..T. D... T...");
+    expect(formatHits("D.T.D..", [2, 2, 3])).toBe("D. T. D..");
+  });
 });

@@ -5,3 +5,4 @@ export * from "./course";
 export * from "./scripts";
 export * from "./registry";
 export * from "./notation";
+export * from "./instruments";
